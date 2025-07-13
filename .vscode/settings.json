@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/d74deadd-cc8e-414e-b101-5e52c44ec33f/resourceGroups/chamiTinder_group/providers/Microsoft.Web/sites/chamiTinder",
+    "appService.deploySubpath": "."
+}
