@@ -128,6 +128,20 @@ def setup():
                     email TEXT NOT NULL,
                     password TEXT NOT NULL
                          );''')
+        cursor = conexion.cursor()
+        cursor.execute("SELECT username FROM usuarios WHERE username = ?", ('admin'))
+        existing_admin = cursor.fetchone()
+
+        if existing_admin:
+            print(f"INFO: El usuario administrador admin ya existe. No se creará de nuevo.")
+        else:
+            cursor.execute(
+                "INSERT INTO usuarios (username, email, password, room) VALUES (?, ?, ?, ?)",
+                ('admin', 'cupideChamiTinder@gmail,com', 'admin2025!?chaminade', '0')
+            )
+        conexion.commit() # ¡Importante: confirmar la inserción!
+        print(f"ÉXITO: Usuario admin creado correctamente.")
+
         conexion.execute('''CREATE TABLE crushes  
                          (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                          username TEXT NOT NULL, 
