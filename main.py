@@ -116,60 +116,67 @@ def register():
     """
 
 # crear la base de datos
+import sqlite3
+# Recuerda que 'app' debe estar definido en tu archivo de Flask
+# from flask import Flask
+# app = Flask(__name__)
+
 @app.route("/setup")
 def setup():
-    # crear la base de datos y la tabla de usuarios
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
     try:
-        conexion.execute('''CREATE TABLE IF NOT EXISTS usuarios
-                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT NOT NULL,
+        with sqlite3.connect("usuariosChamiTinder.db") as conexion:
+            # Habilitar la validación de claves foráneas
+            conexion.execute("PRAGMA foreign_keys = ON;")
+            
+            # 1. Crear la tabla de usuarios
+            conexion.execute('''
+                CREATE TABLE IF NOT EXISTS usuarios (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL UNIQUE,
                     room INTEGER NOT NULL,
-                    email TEXT NOT NULL,
+                    email TEXT NOT NULL UNIQUE,
                     password TEXT NOT NULL
-                         );''')
-        cursor = conexion.cursor()
-        cursor.execute("SELECT username FROM usuarios WHERE username = ?", ('admin'))
-        existing_admin = cursor.fetchone()
+                );
+            ''')
+            conexion.execute("INSERT OR IGNORE INTO usuarios (username, room, email, password) VALUES (?, ?, ?, ?)",
+                             ('admin', 0, 'cupideChamiTinder@gmail.com', 'admin2025!?chaminade'))
+            conexion.commit()
+            print(f"ÉXITO: Usuario admin creado o ya existe.")
 
-        if existing_admin:
-            print(f"INFO: El usuario administrador admin ya existe. No se creará de nuevo.")
-        else:
-            cursor.execute(
-                "INSERT INTO usuarios (username, email, password, room) VALUES (?, ?, ?, ?)",
-                ('admin', 'cupideChamiTinder@gmail,com', 'admin2025!?chaminade', '0')
-            )
-        conexion.commit() # ¡Importante: confirmar la inserción!
-        print(f"ÉXITO: Usuario admin creado correctamente.")
+            # 2. Crear la tabla crushes
+            conexion.execute('''
+                CREATE TABLE IF NOT EXISTS crushes (  -- Añadir IF NOT EXISTS
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    username TEXT NOT NULL, 
+                    crush TEXT NOT NULL, 
+                    FOREIGN KEY (username) REFERENCES usuarios(username), 
+                    FOREIGN KEY (crush) REFERENCES usuarios(username), 
+                    UNIQUE (username, crush)
+                );
+            ''')
+            conexion.commit()
 
-        conexion.execute('''CREATE TABLE crushes  
-                         (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                         username TEXT NOT NULL, 
-                         crush TEXT NOT NULL, 
-                         FOREIGN KEY (username) REFERENCES usuarios(username), 
-                         FOREIGN KEY (crush) REFERENCES usuarios(username), 
-                         UNIQUE (username, crush)
-                         );''')
-
-        conexion.commit()
-        conexion.execute('''
-            CREATE TABLE IF NOT EXISTS variables (
-                nombre_variable TEXT PRIMARY KEY,
-                valor_variable TEXT
-                    );''') 
-                 
-        conexion.execute("INSERT OR IGNORE INTO variables (nombre_variable, valor_variable) VALUES (?, ?)", ('fase', '1'))
-        conexion.commit()
+            # 3. Crear la tabla variables
+            conexion.execute('''
+                CREATE TABLE IF NOT EXISTS variables (
+                    nombre_variable TEXT PRIMARY KEY,
+                    valor_variable TEXT
+                );
+            ''')
+            conexion.execute("INSERT OR IGNORE INTO variables (nombre_variable, valor_variable) VALUES (?, ?)", ('fase', '1'))
+            conexion.commit()
         
-    except sqlite3.OperationalError:
-        print("La tabla ya existe.")        
+        return "<p>Base de datos creada y configurada con éxito.</p>"
 
-    conexion.close()
-    return "<p>Base de datos creada con éxito.</p>"
+    except sqlite3.Error as e:
+        print(f"ERROR al configurar la base de datos: {e}")
+        return f"<p>Error al configurar la base de datos: {e}</p>", 500
 
 
 @app.route("/stats")
 def stats():
+    if session['username'] != 'admin':
+        return "No tienes permisos para acceder a esta página."
     conexion = sqlite3.connect("usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT COUNT(*) FROM usuarios")
@@ -682,6 +689,8 @@ def stats2():
     # Verificar si el usuario ha iniciado sesión
     if 'username' not in session:
         return redirect("/login")
+    if session['username'] != 'admin':
+        return "No tienes permisos para acceder a esta página."
     username = session['username']
     conexion = sqlite3.connect("usuariosChamiTinder.db")
     cursor = conexion.cursor()
@@ -887,7 +896,7 @@ def ejecFase1():
     conexion.commit()
     return "ok"
 
-
+# esta no se está usando 
 @app.route("/pagina_espera")
 def pagina_espera():
     return """
