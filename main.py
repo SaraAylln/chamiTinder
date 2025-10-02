@@ -1386,3 +1386,19 @@ def crushes_de_cada_usuario():
     """
     return render_template_string(tabla_html)
 
+
+# pagina eliminar datos de la base de datos
+@app.route("/eliminarDatos")
+def eliminarDatos():
+    # Verificar si el usuario ha iniciado sesión
+    if 'username' not in session:
+        return redirect("/login")
+    if session['username'] != 'admin':
+        return "No tienes permisos para acceder a esta página."
+    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM usuarios")
+    cursor.execute("DELETE FROM crushes")
+    conexion.commit()
+    conexion.close()
+    return "ok"
