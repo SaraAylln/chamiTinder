@@ -175,16 +175,6 @@ def setup():
 
 @app.route("/stats")
 def stats():
-    if session['username'] != 'admin':
-        return "No tienes permisos para acceder a esta página."
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
-    cursor = conexion.cursor()
-    cursor.execute("SELECT COUNT(*) FROM usuarios")
-    count = cursor.fetchone()[0]
-    cursor.execute("SELECT username, room, email FROM usuarios ORDER BY username ASC")
-    usuarios = cursor.fetchall()
-    conexion.close()
-
     # Construir la tabla HTML
     tabla_html = """
     <table style='width:100%; border-collapse:collapse;'>
