@@ -48,7 +48,7 @@ def hello_world():
 @app.route("/register")
 def register():
     # verificar fase de la aplicación almacenada en la tabla de base de datos
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT valor_variable FROM variables WHERE nombre_variable='fase'")
     fase = cursor.fetchone()
@@ -124,7 +124,7 @@ import sqlite3
 @app.route("/setup")
 def setup():
     try:
-        with sqlite3.connect("usuariosChamiTinder.db") as conexion:
+        with sqlite3.connect("/home/usuariosChamiTinder.db") as conexion:
             # Habilitar la validación de claves foráneas
             conexion.execute("PRAGMA foreign_keys = ON;")
             
@@ -177,7 +177,7 @@ def setup():
 def stats():
     if session['username'] != 'admin':
         return "No tienes permisos para acceder a esta página."
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT COUNT(*) FROM usuarios")
     count = cursor.fetchone()[0]
@@ -254,7 +254,7 @@ def submit_registration():
     room = request.form.get("room") 
     email = request.form.get("email")
     password = request.form.get("password")
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     conexion.execute("INSERT INTO usuarios (username, room, email, password) VALUES (?, ?, ?, ?)", (username, room, email, password))
     conexion.commit()
     conexion.close()
@@ -299,8 +299,13 @@ def submit_registration():
 # primero construyo una pagina para que los usuarios inicien sesión con sus datos y posteriormente puedan introducir sus crushes
 @app.route("/login")
 def login():
+    #verificar si el usuario ya ha iniciado sesión
+    if 'username' not in session:
+        return redirect("/login")
+
+
     # verificar fase de la aplicación almacenada en la tabla de base de datos
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT valor_variable FROM variables WHERE nombre_variable='fase'")
     fase = cursor.fetchone()
@@ -371,7 +376,7 @@ def login():
 def submit_login():
     email = request.form.get("email")
     contraseña = request.form.get("contraseña")
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT username, room FROM usuarios WHERE email=? AND password=?", (email, contraseña))
     usuario = cursor.fetchone()
@@ -429,7 +434,7 @@ def introducir_crushes():
     if 'username' not in session:
         return redirect("/login")
     username = session['username']
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT username, room FROM usuarios ORDER BY username ASC")
     usuarios = cursor.fetchall()
@@ -536,7 +541,7 @@ def guardar_crushes():
 
     conexion = None
     try:
-        conexion = sqlite3.connect("usuariosChamiTinder.db")
+        conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
         cursor = conexion.cursor()
 
         # 1. Get current matches *before* updating crushes (for new match detection)
@@ -692,7 +697,7 @@ def stats2():
     if session['username'] != 'admin':
         return "No tienes permisos para acceder a esta página."
     username = session['username']
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT username, crush FROM crushes ORDER BY username ASC")   
     crushes = cursor.fetchall()
@@ -774,7 +779,7 @@ def admin():
     if session['username'] != 'admin':
         return "No tienes permisos para acceder a esta página."
     username = session['username']
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT username, room FROM usuarios ORDER BY username ASC")
     usuarios = cursor.fetchall()
@@ -833,7 +838,7 @@ def estadoChamiTinder():
         return redirect("/login")
     if session['username'] != 'admin':
         return "No tienes permisos para acceder a esta página."
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT COUNT(*) FROM usuarios")
     count = cursor.fetchone()[0]
@@ -890,7 +895,7 @@ def estadoChamiTinder():
 redirect_login = ""
 @app.route("/ejecFase1")
 def ejecFase1():
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("UPDATE variables SET valor_variable='1' WHERE nombre_variable='fase'")
     conexion.commit()
@@ -947,7 +952,7 @@ def ejecFase2():
     # Actualizar la fase en la base de datos y enviar correos a los usuarios
     import sqlite3
     # registro desactivado; inicio de sesión y seleccion de crushes activada
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
 
         # 1. Update the phase (already correct)
@@ -1039,7 +1044,7 @@ def inicio():
     username = session['username']  
 
     # recuperar fase 
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT valor_variable FROM variables WHERE nombre_variable='fase'")
     fase = cursor.fetchone()
@@ -1177,7 +1182,7 @@ def lostPass():
 @app.route("/submit_lostPass", methods=["POST"])
 def submit_lostPass():
     email = request.form.get("email")
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("SELECT password FROM usuarios WHERE email=?", (email,))
     password = cursor.fetchone()
@@ -1311,7 +1316,7 @@ def crushes_de_cada_usuario():
     user_crushes_data = [] # To store only the current user's crushes
 
     try:
-        conexion = sqlite3.connect("usuariosChamiTinder.db")
+        conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
         cursor = conexion.cursor()
 
         # Modified SQL query:
@@ -1395,7 +1400,7 @@ def eliminarDatos():
         return redirect("/login")
     if session['username'] != 'admin':
         return "No tienes permisos para acceder a esta página."
-    conexion = sqlite3.connect("usuariosChamiTinder.db")
+    conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
     cursor.execute("DELETE FROM usuarios")
     cursor.execute("DELETE FROM crushes")
