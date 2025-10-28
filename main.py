@@ -300,7 +300,7 @@ def submit_registration():
 def login():
     #verificar si el usuario ya ha iniciado sesión
     if 'username' not in session:
-        return redirect("/login")
+        return redirect("/register")
 
 
     # verificar fase de la aplicación almacenada en la tabla de base de datos
