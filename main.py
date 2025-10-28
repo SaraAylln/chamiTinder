@@ -184,7 +184,6 @@ def stats():
     cursor.execute("SELECT username, room, email FROM usuarios ORDER BY username ASC")
     usuarios = cursor.fetchall()
     conexion.close()
-
     # Construir la tabla HTML
     tabla_html = """
     <table style='width:100%; border-collapse:collapse;'>
