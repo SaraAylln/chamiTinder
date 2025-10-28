@@ -298,11 +298,6 @@ def submit_registration():
 # primero construyo una pagina para que los usuarios inicien sesión con sus datos y posteriormente puedan introducir sus crushes
 @app.route("/login")
 def login():
-    #verificar si el usuario ya ha iniciado sesión
-    if 'username' not in session:
-        return redirect("/register")
-
-
     # verificar fase de la aplicación almacenada en la tabla de base de datos
     conexion = sqlite3.connect("/home/usuariosChamiTinder.db")
     cursor = conexion.cursor()
